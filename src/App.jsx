@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Menu from './components/Menu';
 import Content from './components/Content';
+import { ThemeProvider } from './context/ThemeContext';
+import { Provider } from 'react-redux';
+import store from './store';
 import './App.css';
 
 function App() {
-  const [selectedLab, setSelectedLab] = useState(1);
-
   return (
-    <div className="app-container">
-      <Header />
-      <div className="main-content">
-        <Menu selectedLab={selectedLab} onLabSelect={setSelectedLab} />
-        <Content labId={selectedLab} />
-      </div>
-      <Footer />
-    </div>
+    <Provider store={store}>
+      <ThemeProvider>
+        <Router>
+          <div className="app-container">
+            <Header />
+            <div className="main-content">
+              <Menu />
+              <Content />
+            </div>
+            <Footer />
+          </div>
+        </Router>
+      </ThemeProvider>
+    </Provider>
   );
 }
 

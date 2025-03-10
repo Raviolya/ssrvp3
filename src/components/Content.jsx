@@ -1,6 +1,11 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import Counter from './Counter';
 
-function Content({ labId }) {
+function Content() {
+  const { isDarkMode } = useTheme();
+  
   const labContents = {
     1: {
       title: 'Лабораторная работа №1',
@@ -55,18 +60,30 @@ function Content({ labId }) {
     },
   };
 
-  const currentLab = labContents[labId];
-
   return (
     <main style={{
       padding: '2rem',
-      flex: 1
+      flex: 1,
+      backgroundColor: isDarkMode ? '#242424' : '#fff',
+      color: isDarkMode ? '#fff' : '#213547'
     }}>
-      <h2>{currentLab.title}</h2>
-      <div>
-        {currentLab.content}
-      </div>
+      <Routes>
+        <Route path="/lab1" element={<LabContent lab={labContents[1]} />} />
+        <Route path="/lab2" element={<LabContent lab={labContents[2]} />} />
+        <Route path="/lab3" element={<LabContent lab={labContents[3]} />} />
+        <Route path="/counter" element={<Counter />} />
+        <Route path="/" element={<LabContent lab={labContents[1]} />} />
+      </Routes>
     </main>
+  );
+}
+
+function LabContent({ lab }) {
+  return (
+    <>
+      <h2>{lab.title}</h2>
+      <div>{lab.content}</div>
+    </>
   );
 }
 

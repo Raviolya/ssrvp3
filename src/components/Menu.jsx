@@ -1,6 +1,9 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
-function Menu({ selectedLab, onLabSelect }) {
+function Menu() {
+  const { isDarkMode } = useTheme();
   const labWorks = [
     { id: 1, title: 'Лабораторная работа №1' },
     { id: 2, title: 'Лабораторная работа №2' },
@@ -11,32 +14,43 @@ function Menu({ selectedLab, onLabSelect }) {
     <nav style={{
       width: '250px',
       padding: '1rem',
-      backgroundColor: '#f8f9fa',
-      borderRight: '1px solid #e7e7e7',
+      backgroundColor: isDarkMode ? '#333' : '#f8f9fa',
+      borderRight: `1px solid ${isDarkMode ? '#555' : '#e7e7e7'}`,
       height: 'calc(100vh - 140px)'
     }}>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {labWorks.map(lab => (
           <li key={lab.id} style={{ marginBottom: '0.5rem' }}>
-            <a 
-              href={`#lab${lab.id}`}
-              onClick={(e) => {
-                e.preventDefault();
-                onLabSelect(lab.id);
-              }}
-              style={{
+            <NavLink 
+              to={`/lab${lab.id}`}
+              style={({ isActive }) => ({
                 textDecoration: 'none',
-                color: '#333',
+                color: isDarkMode ? '#fff' : '#333',
                 padding: '0.5rem',
                 display: 'block',
                 borderRadius: '4px',
-                backgroundColor: selectedLab === lab.id ? '#e9ecef' : 'transparent'
-              }}
+                backgroundColor: isActive ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent'
+              })}
             >
               {lab.title}
-            </a>
+            </NavLink>
           </li>
         ))}
+        <li>
+          <NavLink 
+            to="/counter"
+            style={({ isActive }) => ({
+              textDecoration: 'none',
+              color: isDarkMode ? '#fff' : '#333',
+              padding: '0.5rem',
+              display: 'block',
+              borderRadius: '4px',
+              backgroundColor: isActive ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent'
+            })}
+          >
+            Лабораторная работа №4
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );
