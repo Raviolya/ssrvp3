@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import Counter from './Counter';
+import FeedbackPage from './feedback/FeedbackPage';
 
 function Content() {
   const { isDarkMode } = useTheme();
@@ -72,6 +73,7 @@ function Content() {
         <Route path="/lab2" element={<LabContent lab={labContents[2]} />} />
         <Route path="/lab3" element={<LabContent lab={labContents[3]} />} />
         <Route path="/counter" element={<Counter />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/" element={<LabContent lab={labContents[1]} />} />
       </Routes>
     </main>

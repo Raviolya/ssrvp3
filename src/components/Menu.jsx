@@ -48,7 +48,22 @@ function Menu() {
               backgroundColor: isActive ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent'
             })}
           >
-            Лабораторная работа №4
+            Counter Demo
+          </NavLink>
+        </li>
+        <li>
+          <NavLink 
+            to="/feedback"
+            style={({ isActive }) => ({
+              textDecoration: 'none',
+              color: isDarkMode ? '#fff' : '#333',
+              padding: '0.5rem',
+              display: 'block',
+              borderRadius: '4px',
+              backgroundColor: isActive ? (isDarkMode ? '#444' : '#e9ecef') : 'transparent'
+            })}
+          >
+            Обратная связь
           </NavLink>
         </li>
       </ul>
