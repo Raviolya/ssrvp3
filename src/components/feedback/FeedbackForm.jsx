@@ -1,19 +1,23 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
-
-function FeedbackForm({ onSubmit }) {
+import { createFeedbackAsync } from '../../actions/Requests';
+import { useDispatch } from 'react-redux';
+function FeedbackForm() {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const handleFormSubmit = useCallback((data) => {
-    onSubmit({
-      ...data,
-      id: Date.now(),
-      date: new Date().toLocaleDateString()
-    });
-    reset();
-  }, [onSubmit, reset]);
+  const dispatch = useDispatch();
+
+  const onSubmit = async (data) => { 
+      try {
+        await dispatch(createFeedbackAsync({email : data.email, message: data.message, rating: data.rating, date: new Date().toLocaleString() + ''})).unwrap();
+        reset();
+      } catch (error) {
+        console.error("Ошибка при отправке:", error);
+      }
+  };
+  
 
   return (
     <div style={{
@@ -23,17 +27,17 @@ function FeedbackForm({ onSubmit }) {
       marginBottom: '20px'
     }}>
       <h3>Оставить отзыв</h3>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div style={{ marginBottom: '15px' }}>
           <input
-            {...register('name', { 
-              required: 'Имя обязательно',
-              minLength: {
-                value: 2,
-                message: 'Имя должно содержать минимум 2 символа'
+            {...register('email', { 
+              required: 'Email обязателен',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Неверный формат email'
               }
             })}
-            placeholder="Ваше имя"
+            placeholder="Ваш email"
             style={{
               width: '100%',
               padding: '8px',
@@ -43,7 +47,7 @@ function FeedbackForm({ onSubmit }) {
               border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
             }}
           />
-          {errors.name && <span style={{ color: 'red' }}>{errors.name.message}</span>}
+          {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
         </div>
 
         <div style={{ marginBottom: '15px' }}>

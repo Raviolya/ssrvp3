@@ -1,13 +1,25 @@
 import { useTheme } from '../../context/ThemeContext';
-
-function FeedbackList({ feedbacks }) {
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchFeedback,deleteFeedbackAsync } from '../../actions/Requests';
+function FeedbackList() {
   const { isDarkMode } = useTheme();
 
-  const handleDelete = (feedbackId) =>{
-    
+  const {feedbacks} = useSelector((state) => state.feedback);
 
+  const dispatch = useDispatch();
 
-  }
+  useEffect(() => {
+    dispatch(fetchFeedback());
+  }, [dispatch]);
+
+  const onDelete = async (id) => { 
+      try {
+        await dispatch(deleteFeedbackAsync(id)).unwrap();
+      } catch (error) {
+        console.error("Ошибка при удалении:", error);
+      }
+  };
 
   return (
     <div>
@@ -40,7 +52,7 @@ function FeedbackList({ feedbacks }) {
                 {feedback.date}
               </span>
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '10px', textAlign: 'left'}}>
               {feedback.message}
             </div>
             <div style={{
@@ -51,10 +63,10 @@ function FeedbackList({ feedbacks }) {
             }}>
               <span>Оценка:</span>
               <span style={{ color: '#646cff' }}>
-                {'★'.repeat(Number(feedback.rating))}
-                {'☆'.repeat(5 - Number(feedback.rating))}
+                {'★'.repeat(Number(feedback.score))}
+                {'☆'.repeat(5 - Number(feedback.score))}
               </span>
-              <button onClick={() => handleDelete(feedback.id)} style={{}}>удалить</button>
+              <button onClick={() => onDelete(feedback.id)} style={{}}>удалить</button>
             </div>
           </div>
         ))

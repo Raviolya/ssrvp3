@@ -1,15 +1,21 @@
 import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
+import { createAccountAsync } from '../../actions/Requests';
+import { useDispatch, useSelector } from 'react-redux';
 
-function RegisterForm({ onRegister, onSwitchToLogin }) {
+
+function RegisterForm({ onSwitchToLogin }) {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const password = watch('password');
+  const { user } = useSelector((state) => state.feedback);
+
+  const dispatch = useDispatch();
 
   const onSubmit = useCallback((data) => {
-    onRegister({ email: data.email, name: data.name });
-  }, [onRegister]);
+    dispatch(createAccountAsync({ name: data.name, email: data.email, password: data.password }));
+  }, [dispatch]);
 
   return (
     <div style={{
@@ -27,11 +33,11 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
             {...register('name', { 
               required: 'Имя обязательно',
               minLength: {
-                value: 2,
-                message: 'Имя должно содержать минимум 2 символа'
+                value: 5,
+                message: 'Логин должен содержать минимум 2 символа'
               }
             })}
-            placeholder="Имя"
+            placeholder="Логин"
             style={{
               width: '100%',
               padding: '8px',
@@ -141,6 +147,7 @@ function RegisterForm({ onRegister, onSwitchToLogin }) {
           Войти
         </button>
       </p>
+      {user?.success && <span style={{ color: 'green' }}>{user.message}</span>}
     </div>
   );
 }

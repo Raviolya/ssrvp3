@@ -1,18 +1,32 @@
-import React, { useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
-
-function LoginForm({ onLogin, onSwitchToRegister }) {
+import { signinAccountAsync } from '../../actions/Requests';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import Loader from '../../assets/svg/loadingCircle.svg';
+function LoginForm({ onSwitchToRegister }) {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const onSubmit = useCallback((data) => {
-    if (data.email === 'admin@example.com' && data.password === 'admin') {
-      onLogin({ email: data.email, name: 'Администратор' });
-    } else {
-      alert('Неверные учетные данные');
+  const { loading, error, isAuthenticated } = useSelector((state) => state.feedback);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const onSubmit = async (data) => { 
+    try {
+      await dispatch(signinAccountAsync({email : data.email, password: data.password})).unwrap();
+    } catch (error) {
+      console.error("Ошибка при входе:", error);
     }
-  }, [onLogin]);
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <div style={{
@@ -82,8 +96,9 @@ function LoginForm({ onLogin, onSwitchToRegister }) {
             cursor: 'pointer'
           }}
         >
-          Войти
+          {loading ? <img className='spinner' src={Loader} alt="" /> : "Войти"}
         </button>
+        {error && <span style={{ color: 'red' }}>{error}</span>}
       </form>
 
       <p style={{ marginTop: '15px', textAlign: 'center' }}>

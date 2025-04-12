@@ -1,11 +1,21 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import Counter from './Counter';
 import FeedbackPage from './feedback/FeedbackPage';
-
+import Profile from './Profile';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFeedback, fetchProfile } from '../actions/Requests';
 function Content() {
   const { isDarkMode } = useTheme();
+
+  const dispatch = useDispatch();
+  const { feedback, profile, loading, error } = useSelector((state) => state.feedback);
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch])
+
   
   const labContents = {
     1: {
@@ -75,6 +85,7 @@ function Content() {
         <Route path="/counter" element={<Counter />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/" element={<LabContent lab={labContents[1]} />} />
+        <Route path="/profile" element={<Profile profile={profile} />} />
       </Routes>
     </main>
   );

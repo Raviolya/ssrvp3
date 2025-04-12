@@ -18,7 +18,7 @@ function Header({ userData, onLogout }) {
     }}>
       <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Лабораторные работы</h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        {userData && <UserProfile userData={userData} onLogout={onLogout} />}
+        <UserProfile />
         <button 
           onClick={toggleTheme}
           style={{

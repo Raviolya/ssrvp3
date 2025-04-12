@@ -1,6 +1,7 @@
 {
   "name": "lab2",
   "private": true,
+  "proxy": "http://127.0.0.1:5000",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -10,12 +11,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.0.0",
-    "react-redux": "^9.0.0",
-    "react-router-dom": "^6.0.0",
+    "@reduxjs/toolkit": "^2.6.1",
+    "axios": "^1.8.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "7.48.2"
+    "react-hook-form": "7.48.2",
+    "react-redux": "^9.0.0",
+    "react-router-dom": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

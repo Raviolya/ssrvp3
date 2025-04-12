@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -7,14 +7,21 @@ import Content from './components/Content';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import { ThemeProvider } from './context/ThemeContext';
-import { Provider } from 'react-redux';
-import store from './store';
+import { useDispatch ,useSelector} from 'react-redux';
 import { useLoginState } from './hooks/useLoginState';
 import './App.css';
-
+import { checkSessionAsync, fetchProfile } from './actions/Requests';
+import Loader from './assets/svg/loadingCircle.svg';
 function App() {
-  const { isLoggedIn, login, logout, getUserData } = useLoginState();
   const [showLogin, setShowLogin] = useState(true);
+
+  const dispatch = useDispatch();
+  const { isAuthenticated, loading, error} = useSelector((state) => state.feedback);
+
+  useEffect(() => {
+    dispatch(checkSessionAsync());
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
   const handleLogin = (userData) => {
     login(userData);
@@ -24,32 +31,33 @@ function App() {
     login(userData);
   };
 
-  if (!isLoggedIn) {
+  if (!isAuthenticated) {
     return (
-      <ThemeProvider>
-        <div className="auth-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-          {showLogin ? (
-            <LoginForm 
-              onLogin={handleLogin}
-              onSwitchToRegister={() => setShowLogin(false)}
-            />
-          ) : (
-            <RegisterForm
-              onRegister={handleRegister}
-              onSwitchToLogin={() => setShowLogin(true)}
-            />
-          )}
-        </div>
-      </ThemeProvider>
+        <ThemeProvider>
+          <Router>
+          <div className="auth-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+            {showLogin ? (
+              <LoginForm 
+                onLogin={handleLogin}
+                onSwitchToRegister={() => setShowLogin(false)}
+              />
+            ) : (
+              <RegisterForm
+                onRegister={handleRegister}
+                onSwitchToLogin={() => setShowLogin(true)}
+              />
+            )}
+          </div>
+          </Router>
+        </ThemeProvider>
     );
   }
 
   return (
-    <Provider store={store}>
       <ThemeProvider>
         <Router>
           <div className="app-container">
-            <Header userData={getUserData()} onLogout={logout} />
+            <Header />
             <div className="main-content">
               <Menu />
               <Content />
@@ -58,7 +66,6 @@ function App() {
           </div>
         </Router>
       </ThemeProvider>
-    </Provider>
   );
 }
 
