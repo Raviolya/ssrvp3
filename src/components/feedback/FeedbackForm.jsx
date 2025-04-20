@@ -1,118 +1,152 @@
 import React from 'react';
+import {
+  Box,
+  TextField,
+  Typography,
+  Select,
+  MenuItem,
+  Button,
+  InputLabel,
+  FormControl,
+  FormHelperText
+} from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
 import { createFeedbackAsync } from '../../actions/Requests';
 import { useDispatch } from 'react-redux';
+
 function FeedbackForm() {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
-
   const dispatch = useDispatch();
 
-  const onSubmit = async (data) => { 
-      try {
-        await dispatch(createFeedbackAsync({email : data.email, message: data.message, rating: data.rating, date: new Date().toLocaleString() + ''})).unwrap();
-        reset();
-      } catch (error) {
-        console.error("Ошибка при отправке:", error);
-      }
+  const onSubmit = async (data) => {
+    try {
+      await dispatch(createFeedbackAsync({
+        email: data.email,
+        message: data.message,
+        rating: data.rating,
+        date: new Date().toLocaleString()
+      })).unwrap();
+      reset();
+    } catch (error) {
+      console.error("Ошибка при отправке:", error);
+    }
   };
-  
+
+  const commonInputStyles = {
+    input: { color: isDarkMode ? '#fff' : '#000' },
+    label: { color: isDarkMode ? '#aaa' : '#000' },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: isDarkMode ? '#555' : '#ccc',
+      },
+      '&:hover fieldset': {
+        borderColor: isDarkMode ? '#777' : '#888',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: isDarkMode ? '#888' : '#1976d2',
+      },
+    },
+  };
 
   return (
-    <div style={{
-      backgroundColor: isDarkMode ? '#333' : '#fff',
-      padding: '20px',
-      borderRadius: '8px',
-      marginBottom: '20px'
-    }}>
-      <h3>Оставить отзыв</h3>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            {...register('email', { 
-              required: 'Email обязателен',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Неверный формат email'
-              }
-            })}
-            placeholder="Ваш email"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
-        </div>
+    <Box
+      sx={{
+        backgroundColor: isDarkMode ? '#2c2c2c' : '#fff',
+        p: 3,
+        borderRadius: 2,
+        mb: 4,
+        boxShadow: isDarkMode ? '0 0 10px rgba(0,0,0,0.5)' : '0 0 10px rgba(0,0,0,0.1)',
+      }}
+    >
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ color: isDarkMode ? '#fff' : '#000' }}
+      >
+        Оставить отзыв
+      </Typography>
 
-        <div style={{ marginBottom: '15px' }}>
-          <textarea
-            {...register('message', { 
-              required: 'Сообщение обязательно',
-              minLength: {
-                value: 10,
-                message: 'Сообщение должно содержать минимум 10 символов'
-              }
-            })}
-            placeholder="Ваш отзыв"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`,
-              minHeight: '100px',
-              resize: 'vertical'
-            }}
-          />
-          {errors.message && <span style={{ color: 'red' }}>{errors.message.message}</span>}
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <TextField
+          fullWidth
+          label="Ваш email"
+          variant="outlined"
+          margin="normal"
+          {...register('email', {
+            required: 'Email обязателен',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: 'Неверный формат email'
+            }
+          })}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          sx={commonInputStyles}
+        />
 
-        <div style={{ marginBottom: '15px' }}>
-          <select
+        <TextField
+          fullWidth
+          label="Ваш отзыв"
+          variant="outlined"
+          margin="normal"
+          multiline
+          rows={4}
+          {...register('message', {
+            required: 'Сообщение обязательно',
+            minLength: {
+              value: 10,
+              message: 'Сообщение должно содержать минимум 10 символов'
+            }
+          })}
+          error={!!errors.message}
+          helperText={errors.message?.message}
+          sx={commonInputStyles}
+        />
+
+        <FormControl
+          fullWidth
+          margin="normal"
+          error={!!errors.rating}
+          sx={commonInputStyles}
+        >
+          <InputLabel sx={{ color: isDarkMode ? '#aaa' : '#000' }}>
+            Оценка
+          </InputLabel>
+          <Select
+            defaultValue=""
             {...register('rating', { required: 'Выберите оценку' })}
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
+            label="Оценка"
+            sx={{
               color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? '#555' : '#ccc',
+              },
             }}
           >
-            <option value="">Выберите оценку</option>
-            <option value="5">Отлично</option>
-            <option value="4">Хорошо</option>
-            <option value="3">Удовлетворительно</option>
-            <option value="2">Плохо</option>
-            <option value="1">Очень плохо</option>
-          </select>
-          {errors.rating && <span style={{ color: 'red' }}>{errors.rating.message}</span>}
-        </div>
+            <MenuItem value="">Выберите оценку</MenuItem>
+            <MenuItem value="5">Отлично</MenuItem>
+            <MenuItem value="4">Хорошо</MenuItem>
+            <MenuItem value="3">Удовлетворительно</MenuItem>
+            <MenuItem value="2">Плохо</MenuItem>
+            <MenuItem value="1">Очень плохо</MenuItem>
+          </Select>
+          <FormHelperText>{errors.rating?.message}</FormHelperText>
+        </FormControl>
 
-        <button
+        <Button
           type="submit"
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#646cff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 2 }}
         >
           Отправить отзыв
-        </button>
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 }
 
-export default FeedbackForm; 
+export default FeedbackForm;

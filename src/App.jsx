@@ -1,71 +1,120 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Menu from './components/Menu';
 import Content from './components/Content';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
-import { ThemeProvider } from './context/ThemeContext';
-import { useDispatch ,useSelector} from 'react-redux';
-import { useLoginState } from './hooks/useLoginState';
-import './App.css';
+import { useDispatch, useSelector } from 'react-redux';
 import { checkSessionAsync, fetchProfile } from './actions/Requests';
-import Loader from './assets/svg/loadingCircle.svg';
+import {
+  Box,
+  Container,
+  CssBaseline,
+  GlobalStyles,
+} from '@mui/material';
+import DrawerMenu from './components/DrawerMenu';
+import { useTheme } from './context/ThemeContext';
+
+
+
 function App() {
   const [showLogin, setShowLogin] = useState(true);
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dispatch = useDispatch();
-  const { isAuthenticated, loading, error} = useSelector((state) => state.feedback);
+  const { isAuthenticated } = useSelector((state) => state.feedback);
+  const drawerWidth = 240;
+
+  const { isDarkMode } = useTheme();
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   useEffect(() => {
     dispatch(checkSessionAsync());
     dispatch(fetchProfile());
   }, [dispatch]);
 
-  const handleLogin = (userData) => {
-    login(userData);
-  };
-
-  const handleRegister = (userData) => {
-    login(userData);
-  };
-
   if (!isAuthenticated) {
     return (
-        <ThemeProvider>
-          <Router>
-          <div className="auth-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+        <Router>
+          <CssBaseline />
+          <GlobalStyles
+            styles={{
+              body: {
+                backgroundColor: isDarkMode ? '#242424' : '#ffffff',
+                color: isDarkMode ? '#ffffff' : '#000000',
+                transition: 'background-color 0.3s ease, color 0.3s ease',
+              },
+            }}
+          />
+          <Box
+            sx={{
+              minHeight: '100vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: 2,
+            }}
+          >
             {showLogin ? (
-              <LoginForm 
-                onLogin={handleLogin}
-                onSwitchToRegister={() => setShowLogin(false)}
-              />
+              <LoginForm onSwitchToRegister={() => setShowLogin(false)} />
             ) : (
-              <RegisterForm
-                onRegister={handleRegister}
-                onSwitchToLogin={() => setShowLogin(true)}
-              />
+              <RegisterForm onSwitchToLogin={() => setShowLogin(true)} />
             )}
-          </div>
-          </Router>
-        </ThemeProvider>
+          </Box>
+        </Router>
     );
   }
 
   return (
-      <ThemeProvider>
-        <Router>
-          <div className="app-container">
-            <Header />
-            <div className="main-content">
-              <Menu />
-              <Content />
-            </div>
-            <Footer />
-          </div>
-        </Router>
-      </ThemeProvider>
+      <Router>
+        <CssBaseline />
+        <GlobalStyles
+          styles={{
+            body: {
+              backgroundColor: isDarkMode ? '#242424' : '#ffffff',
+              color: isDarkMode ? '#ffffff' : '#000000',
+              transition: 'background-color 0.3s ease, color 0.3s ease',
+            },
+          }}
+        />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
+            overflowX: 'hidden',
+          }}
+        >
+          <Header onMenuClick={handleDrawerToggle} />
+
+          <Box sx={{ display: 'flex', flex: 1, width: '100%' }}>
+            <DrawerMenu
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              containerWidth={drawerWidth}
+            />
+
+            <Box
+              component="main"
+              sx={{
+                flexGrow: 1,
+                px: { xs: 1, sm: 2 },
+                py: 2,
+                width: '100%',
+              }}
+            >
+              <Container maxWidth="xl" disableGutters>
+                <Content drawerWidth={drawerWidth} />
+              </Container>
+            </Box>
+          </Box>
+
+          <Footer />
+        </Box>
+      </Router>
   );
 }
 

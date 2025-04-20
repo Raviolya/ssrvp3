@@ -3,14 +3,26 @@ import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
 import { createAccountAsync } from '../../actions/Requests';
 import { useDispatch, useSelector } from 'react-redux';
-
+import {
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Link
+} from '@mui/material';
 
 function RegisterForm({ onSwitchToLogin }) {
   const { isDarkMode } = useTheme();
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors }
+  } = useForm();
+
   const password = watch('password');
   const { user } = useSelector((state) => state.feedback);
-
   const dispatch = useDispatch();
 
   const onSubmit = useCallback((data) => {
@@ -18,138 +30,117 @@ function RegisterForm({ onSwitchToLogin }) {
   }, [dispatch]);
 
   return (
-    <div style={{
-      maxWidth: '400px',
-      margin: '0 auto',
-      padding: '20px',
-      backgroundColor: isDarkMode ? '#333' : '#fff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h2>Регистрация</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            {...register('name', { 
-              required: 'Имя обязательно',
-              minLength: {
-                value: 5,
-                message: 'Логин должен содержать минимум 2 символа'
-              }
-            })}
-            placeholder="Логин"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.name && <span style={{ color: 'red' }}>{errors.name.message}</span>}
-        </div>
+    <Paper
+      elevation={3}
+      sx={{
+        maxWidth: 400,
+        mx: 'auto',
+        mt: 4,
+        p: 3,
+        backgroundColor: isDarkMode ? '#2c2c2c' : '#fff',
+        color: isDarkMode ? '#fff' : 'inherit',
+      }}
+    >
+      <Typography variant="h5" align="center" gutterBottom>
+        Регистрация
+      </Typography>
 
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            {...register('email', { 
-              required: 'Email обязателен',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Неверный формат email'
-              }
-            })}
-            placeholder="Email"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <TextField
+          fullWidth
+          label="Логин"
+          margin="normal"
+          variant="outlined"
+          {...register('name', {
+            required: 'Имя обязательно',
+            minLength: {
+              value: 2,
+              message: 'Логин должен содержать минимум 2 символа'
+            }
+          })}
+          error={!!errors.name}
+          helperText={errors.name?.message}
+        />
 
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="password"
-            {...register('password', { 
-              required: 'Пароль обязателен',
-              minLength: {
-                value: 5,
-                message: 'Минимальная длина пароля 5 символов'
-              }
-            })}
-            placeholder="Пароль"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
-        </div>
+        <TextField
+          fullWidth
+          label="Email"
+          margin="normal"
+          variant="outlined"
+          {...register('email', {
+            required: 'Email обязателен',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: 'Неверный формат email'
+            }
+          })}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+        />
 
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="password"
-            {...register('confirmPassword', { 
-              required: 'Подтвердите пароль',
-              validate: value => value === password || 'Пароли не совпадают'
-            })}
-            placeholder="Подтвердите пароль"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.confirmPassword && <span style={{ color: 'red' }}>{errors.confirmPassword.message}</span>}
-        </div>
+        <TextField
+          fullWidth
+          label="Пароль"
+          type="password"
+          margin="normal"
+          variant="outlined"
+          {...register('password', {
+            required: 'Пароль обязателен',
+            minLength: {
+              value: 5,
+              message: 'Минимальная длина пароля 5 символов'
+            }
+          })}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+        />
 
-        <button
+        <TextField
+          fullWidth
+          label="Подтвердите пароль"
+          type="password"
+          margin="normal"
+          variant="outlined"
+          {...register('confirmPassword', {
+            required: 'Подтвердите пароль',
+            validate: value => value === password || 'Пароли не совпадают'
+          })}
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+        />
+
+        <Button
           type="submit"
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#646cff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          fullWidth
+          variant="contained"
+          sx={{ mt: 2, backgroundColor: '#646cff' }}
         >
           Зарегистрироваться
-        </button>
+        </Button>
       </form>
 
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        Уже есть аккаунт?{' '}
-        <button
-          onClick={onSwitchToLogin}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#646cff',
-            cursor: 'pointer',
-            padding: '0',
-            textDecoration: 'underline'
-          }}
-        >
-          Войти
-        </button>
-      </p>
-      {user?.success && <span style={{ color: 'green' }}>{user.message}</span>}
-    </div>
+      <Box mt={2} textAlign="center">
+        <Typography variant="body2">
+          Уже есть аккаунт?{' '}
+          <Link
+            component="button"
+            variant="body2"
+            onClick={onSwitchToLogin}
+            underline="hover"
+            sx={{ color: '#646cff' }}
+          >
+            Войти
+          </Link>
+        </Typography>
+      </Box>
+
+      {user?.success && (
+        <Typography variant="body2" color="success.main" sx={{ mt: 2 }}>
+          {user.message}
+        </Typography>
+      )}
+    </Paper>
   );
 }
 
-export default RegisterForm; 
+export default RegisterForm;

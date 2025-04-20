@@ -5,20 +5,32 @@ import { signinAccountAsync } from '../../actions/Requests';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../assets/svg/loadingCircle.svg';
+import {
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Link,
+} from '@mui/material';
+
 function LoginForm({ onSwitchToRegister }) {
   const { isDarkMode } = useTheme();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const { loading, error, isAuthenticated } = useSelector((state) => state.feedback);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const onSubmit = async (data) => { 
+  const onSubmit = async (data) => {
     try {
-      await dispatch(signinAccountAsync({email : data.email, password: data.password})).unwrap();
+      await dispatch(signinAccountAsync({ email: data.email, password: data.password })).unwrap();
     } catch (error) {
-      console.error("Ошибка при входе:", error);
+      console.error('Ошибка при входе:', error);
     }
   };
 
@@ -29,96 +41,93 @@ function LoginForm({ onSwitchToRegister }) {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div style={{
-      maxWidth: '400px',
-      margin: '0 auto',
-      padding: '20px',
-      backgroundColor: isDarkMode ? '#333' : '#fff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h2>Вход в систему</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            {...register('email', { 
-              required: 'Email обязателен',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Неверный формат email'
-              }
-            })}
-            placeholder="Email"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
-        </div>
+    <Paper
+      elevation={3}
+      sx={{
+        maxWidth: 400,
+        mx: 'auto',
+        mt: 4,
+        p: 3,
+        backgroundColor: isDarkMode ? '#2c2c2c' : '#fff',
+        color: isDarkMode ? '#fff' : 'inherit',
+      }}
+    >
+      <Typography variant="h5" align="center" gutterBottom>
+        Вход в систему
+      </Typography>
 
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="password"
-            {...register('password', { 
-              required: 'Пароль обязателен',
-              minLength: {
-                value: 5,
-                message: 'Минимальная длина пароля 5 символов'
-              }
-            })}
-            placeholder="Пароль"
-            style={{
-              width: '100%',
-              padding: '8px',
-              marginBottom: '5px',
-              backgroundColor: isDarkMode ? '#444' : '#fff',
-              color: isDarkMode ? '#fff' : '#000',
-              border: `1px solid ${isDarkMode ? '#555' : '#ddd'}`
-            }}
-          />
-          {errors.password && <span style={{ color: 'red' }}>{errors.password.message}</span>}
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <TextField
+          fullWidth
+          label="Email"
+          margin="normal"
+          variant="outlined"
+          {...register('email', {
+            required: 'Email обязателен',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: 'Неверный формат email',
+            },
+          })}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          InputLabelProps={{ style: { color: isDarkMode ? '#fff' : undefined } }}
+        />
 
-        <button
+        <TextField
+          fullWidth
+          label="Пароль"
+          type="password"
+          margin="normal"
+          variant="outlined"
+          {...register('password', {
+            required: 'Пароль обязателен',
+            minLength: {
+              value: 5,
+              message: 'Минимальная длина пароля 5 символов',
+            },
+          })}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          InputLabelProps={{ style: { color: isDarkMode ? '#fff' : undefined } }}
+        />
+
+        <Button
           type="submit"
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#646cff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          fullWidth
+          variant="contained"
+          sx={{ mt: 2, backgroundColor: '#646cff' }}
         >
-          {loading ? <img className='spinner' src={Loader} alt="" /> : "Войти"}
-        </button>
-        {error && <span style={{ color: 'red' }}>{error}</span>}
+          {loading ? (
+            <img src={Loader} alt="Загрузка..." style={{ height: 24 }} />
+          ) : (
+            'Войти'
+          )}
+        </Button>
+
+        {error && (
+          <Typography color="error" align="center" sx={{ mt: 1 }}>
+            {error}
+          </Typography>
+        )}
       </form>
 
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        Нет аккаунта?{' '}
-        <button
-          onClick={onSwitchToRegister}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#646cff',
-            cursor: 'pointer',
-            padding: '0',
-            textDecoration: 'underline'
-          }}
-        >
-          Зарегистрироваться
-        </button>
-      </p>
-    </div>
+      <Box mt={2} textAlign="center">
+        <Typography variant="body2">
+          Нет аккаунта?{' '}
+          <Link
+            component="button"
+            variant="body2"
+            onClick={onSwitchToRegister}
+            underline="hover"
+            sx={{ color: '#646cff' }}
+          >
+            Зарегистрироваться
+          </Link>
+        </Typography>
+      </Box>
+    </Paper>
   );
 }
 
-export default LoginForm; 
+export default LoginForm;

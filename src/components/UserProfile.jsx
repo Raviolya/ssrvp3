@@ -1,55 +1,74 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { NavLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchProfile } from '../actions/Requests';
-import Loader from '../assets/svg/loadingCircle.svg';
 import { Logout } from '../actions/Requests';
+import {
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
+  Link as MuiLink
+} from '@mui/material';
 
 function UserProfile() {
   const { isDarkMode } = useTheme();
+  const dispatch = useDispatch();
 
-  const dispatch = useDispatch(); 
+  const { profile } = useSelector((state) => state.feedback);
 
-  const onLogout = async () => { 
-      try {
-        await dispatch(Logout()).unwrap();
-      } catch (error) {
-        console.error("Ошибка при выходе:", error);
-      }
+  const onLogout = async () => {
+    try {
+      await dispatch(Logout()).unwrap();
+    } catch (error) {
+      console.error("Ошибка при выходе:", error);
+    }
   };
 
-  const { profile} = useSelector((state) => state.feedback);
-
   return (
-    <div style={{
-      position: 'absolute',
-      right: '60px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-      marginRight: '20px',
-    }}>
-      <NavLink to="/profile" style={{
-        color: isDarkMode ? '#fff' : '#213547'
-      }}>
-        {profile ? profile.username : <img className='spinner' src={Loader} alt="" />}
-      </NavLink>
-      <button
+    <Box
+      sx={{
+        position: 'absolute',
+        right: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        mr: 2
+      }}
+    >
+      <MuiLink
+        component={NavLink}
+        to="/profile"
+        underline="hover"
+        sx={{
+          color: isDarkMode ? '#fff' : '#213547',
+          fontWeight: 500
+        }}
+      >
+        {profile ? (
+          <Typography variant="body1">{profile.username}</Typography>
+        ) : (
+          <CircularProgress size={20} />
+        )}
+      </MuiLink>
+
+      <Button
         onClick={onLogout}
-        style={{
-          padding: '5px 10px',
+        variant="contained"
+        size="small"
+        sx={{
           backgroundColor: isDarkMode ? '#444' : '#e9ecef',
           color: isDarkMode ? '#fff' : '#213547',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
+          textTransform: 'none',
+          '&:hover': {
+            backgroundColor: isDarkMode ? '#555' : '#dcdcdc',
+          }
         }}
       >
         Выйти
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 
-export default UserProfile; 
+export default UserProfile;

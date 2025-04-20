@@ -1,78 +1,117 @@
+import React, { useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  Stack,
+  IconButton,
+  Divider,
+  useMediaQuery
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '../../context/ThemeContext';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
-import { fetchFeedback,deleteFeedbackAsync } from '../../actions/Requests';
+import { fetchFeedback, deleteFeedbackAsync } from '../../actions/Requests';
+
 function FeedbackList() {
   const { isDarkMode } = useTheme();
-
-  const {feedbacks} = useSelector((state) => state.feedback);
-
+  const { feedbacks } = useSelector((state) => state.feedback);
   const dispatch = useDispatch();
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     dispatch(fetchFeedback());
   }, [dispatch]);
 
-  const onDelete = async (id) => { 
-      try {
-        await dispatch(deleteFeedbackAsync(id)).unwrap();
-      } catch (error) {
-        console.error("Ошибка при удалении:", error);
-      }
+  const onDelete = async (id) => {
+    try {
+      await dispatch(deleteFeedbackAsync(id)).unwrap();
+    } catch (error) {
+      console.error('Ошибка при удалении:', error);
+    }
   };
 
   return (
-    <div>
-      <h3>Отзывы</h3>
+    <Box mt={4}>
+      <Typography
+        variant={isMobile ? 'h6' : 'h5'}
+        gutterBottom
+        sx={{ color: isDarkMode ? '#fff' : '#000' }}
+      >
+        Отзывы
+      </Typography>
+
       {feedbacks.length === 0 ? (
-        <p style={{ textAlign: 'center', color: isDarkMode ? '#888' : '#666' }}>
+        <Typography variant="body2" align="center" color="textSecondary">
           Пока нет отзывов
-        </p>
+        </Typography>
       ) : (
-        feedbacks.map(feedback => (
-          <div
-            key={feedback.id}
-            style={{
-              backgroundColor: isDarkMode ? '#333' : '#f8f9fa',
-              padding: '15px',
-              marginBottom: '15px',
-              borderRadius: '8px',
-              border: `1px solid ${isDarkMode ? '#444' : '#ddd'}`
-            }}
-          >
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              marginBottom: '10px'
-            }}>
-              <strong style={{ color: isDarkMode ? '#fff' : '#000' }}>
-                {feedback.name}
-              </strong>    
-              <span style={{ color: isDarkMode ? '#888' : '#666' }}>
-                {feedback.date}
-              </span>
-            </div>
-            <div style={{ marginBottom: '10px', textAlign: 'left'}}>
-              {feedback.message}
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              color: isDarkMode ? '#888' : '#666'
-            }}>
-              <span>Оценка:</span>
-              <span style={{ color: '#646cff' }}>
-                {'★'.repeat(Number(feedback.score))}
-                {'☆'.repeat(5 - Number(feedback.score))}
-              </span>
-              <button onClick={() => onDelete(feedback.id)} style={{}}>удалить</button>
-            </div>
-          </div>
-        ))
+        <Stack spacing={2}>
+          {feedbacks.map((feedback) => (
+            <Paper
+              key={feedback.id}
+              elevation={3}
+              sx={{
+                p: 2,
+                backgroundColor: isDarkMode ? '#2e2e2e' : '#f9f9f9',
+                border: isDarkMode ? '1px solid #444' : '1px solid #ddd',
+                color: isDarkMode ? '#fff' : '#000',
+              }}
+            >
+              <Box
+                display="flex"
+                flexDirection={isMobile ? 'column' : 'row'}
+                justifyContent="space-between"
+                alignItems={isMobile ? 'flex-start' : 'center'}
+              >
+                <Typography fontWeight="bold">
+                  {feedback.name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color={isDarkMode ? 'grey.400' : 'textSecondary'}
+                  sx={{ mt: isMobile ? 0.5 : 0 }}
+                >
+                  {feedback.date}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ my: 1, borderColor: isDarkMode ? '#555' : '#ccc' }} />
+
+              <Typography sx={{ mb: 1 }}>
+                {feedback.message}
+              </Typography>
+
+              <Box
+                display="flex"
+                flexDirection={isMobile ? 'column' : 'row'}
+                justifyContent="space-between"
+                alignItems={isMobile ? 'flex-start' : 'center'}
+                gap={isMobile ? 1 : 0}
+              >
+                <Typography variant="body2" color={isDarkMode ? 'grey.400' : 'textSecondary'}>
+                  Оценка:&nbsp;
+                  <span style={{ color: '#646cff' }}>
+                    {'★'.repeat(Number(feedback.score))}
+                    {'☆'.repeat(5 - Number(feedback.score))}
+                  </span>
+                </Typography>
+
+                <IconButton
+                  onClick={() => onDelete(feedback.id)}
+                  color="error"
+                  size="small"
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Paper>
+          ))}
+        </Stack>
       )}
-    </div>
+    </Box>
   );
 }
 
-export default FeedbackList; 
+export default FeedbackList;
