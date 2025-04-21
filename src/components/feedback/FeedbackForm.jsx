@@ -13,12 +13,14 @@ import {
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
 import { createFeedbackAsync } from '../../actions/Requests';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 function FeedbackForm() {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const dispatch = useDispatch();
+
+  const { profile } = useSelector((state) => state.feedback);
 
   const onSubmit = async (data) => {
     try {
@@ -26,7 +28,8 @@ function FeedbackForm() {
         email: data.email,
         message: data.message,
         rating: data.rating,
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
+        user_id: profile.id,
       })).unwrap();
       reset();
     } catch (error) {

@@ -10,10 +10,10 @@ import HomePage from './HomePage';
 import Counter from './Counter';
 import FeedbackPage from './feedback/FeedbackPage';
 import Profile from './Profile';
+import AdminUsersPage from './AdminUsersPage';
 
 function Content() {
- 
-
+  
   const dispatch = useDispatch();
   const { profile } = useSelector((state) => state.feedback);
 
@@ -90,6 +90,7 @@ function Content() {
         <Route path="/counter" element={<Counter />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/profile" element={<Profile profile={profile} />} />
+        <Route path="/admin_panel" element={<AdminUsersPage />} />
       </Routes>
     </Box>
   );

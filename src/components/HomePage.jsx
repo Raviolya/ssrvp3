@@ -27,7 +27,7 @@ function HomePage() {
         </Typography>
 
         <Typography variant="body1" paragraph>
-          Это сайт с лабораторными работами.
+          Это сайт с лабораторными работами, выполненными в рамках курса. Используются современные технологии: React, Material UI и другие.
         </Typography>
 
         <Typography variant="body1" paragraph>

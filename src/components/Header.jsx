@@ -8,7 +8,7 @@ import UserProfile from './UserProfile';
 function Header({ onMenuClick }) {
   const { isDarkMode, toggleTheme } = useTheme();
   const muiTheme = useMuiTheme();
-  const isMobile = useMediaQuery('(max-width:700px)'); // <= 700px
+  const isMobile = useMediaQuery('(max-width:700px)');
 
   return (
     <header style={{
@@ -21,6 +21,7 @@ function Header({ onMenuClick }) {
       alignItems: 'center',
       position: 'fixed',
       width: '100%',
+      zIndex: 20,
     }}>
       <Box display="flex" alignItems="center" gap={2}>
         <IconButton
