@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Box, Typography, Paper } from '@mui/material';
 import { useTheme } from '../context/ThemeContext';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchFeedback, fetchProfile } from '../actions/Requests';
+
+import {
+  useFetchProfileQuery,
+  useFetchFeedbackQuery,
+} from '../actions/Requests'
 
 import AboutPage from './AboutPage';
 import HomePage from './HomePage';
@@ -13,13 +16,8 @@ import Profile from './Profile';
 import AdminUsersPage from './AdminUsersPage';
 
 function Content() {
-  
-  const dispatch = useDispatch();
-  const { profile } = useSelector((state) => state.feedback);
-
-  useEffect(() => {
-    dispatch(fetchProfile());
-  }, [dispatch]);
+  const { data: profile, isLoading: profileLoading } = useFetchProfileQuery();
+  useFetchFeedbackQuery();
 
   const labContents = {
     1: {
@@ -37,7 +35,7 @@ function Content() {
             <li>Реализовать скрипт сохранения учетных данных и автоподстановку оных с помощью localStorage</li>
           </ul>
         </ul>
-      )
+      ),
     },
     2: {
       title: 'Лабораторная работа №2',
@@ -50,7 +48,7 @@ function Content() {
           <li>Разместить проект в репозиторий в github</li>
           <li>Прикрепить текстовый файл с ссылкой на проект</li>
         </ul>
-      )
+      ),
     },
     3: {
       title: 'Лабораторная работа №3',
@@ -65,7 +63,7 @@ function Content() {
           <li>Разместить проект в репозиторий в github</li>
           <li>Прикрепить текстовый файл с ссылкой на проект</li>
         </ul>
-      )
+      ),
     },
   };
 
@@ -99,13 +97,20 @@ function Content() {
 function LabContent({ lab }) {
   const { isDarkMode } = useTheme();
   return (
-    <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, maxWidth: '100%', overflowX: 'auto', backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff', color: isDarkMode ? '#ffffff' : '#00000', }}>
+    <Paper
+      elevation={3}
+      sx={{
+        p: { xs: 2, sm: 3 },
+        maxWidth: '100%',
+        overflowX: 'auto',
+        backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#000000',
+      }}
+    >
       <Typography variant="h5" gutterBottom>
         {lab.title}
       </Typography>
-      <Box component="div">
-        {lab.content}
-      </Box>
+      <Box component="div">{lab.content}</Box>
     </Paper>
   );
 }

@@ -1,16 +1,16 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
-import { createAccountAsync } from '../../actions/Requests';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Paper,
   Typography,
   TextField,
   Button,
   Box,
-  Link
+  Link,
 } from '@mui/material';
+
+import { useCreateAccountMutation } from '../../actions/Requests';
 
 function RegisterForm({ onSwitchToLogin }) {
   const { isDarkMode } = useTheme();
@@ -18,16 +18,28 @@ function RegisterForm({ onSwitchToLogin }) {
     register,
     handleSubmit,
     watch,
-    formState: { errors }
+    formState: { errors },
   } = useForm();
 
   const password = watch('password');
-  const { user } = useSelector((state) => state.feedback);
-  const dispatch = useDispatch();
+  const [createAccount, { isLoading, error, isSuccess, data }] = useCreateAccountMutation();
+  const [submitted, setSubmitted] = useState(false);
 
-  const onSubmit = useCallback((data) => {
-    dispatch(createAccountAsync({ name: data.name, email: data.email, password: data.password }));
-  }, [dispatch]);
+  const onSubmit = useCallback(
+    async (data) => {
+      try {
+        await createAccount({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }).unwrap();
+        setSubmitted(true);
+      } catch (err) {
+        console.error('Ошибка регистрации:', err);
+      }
+    },
+    [createAccount]
+  );
 
   return (
     <Paper
@@ -55,8 +67,8 @@ function RegisterForm({ onSwitchToLogin }) {
             required: 'Имя обязательно',
             minLength: {
               value: 2,
-              message: 'Логин должен содержать минимум 2 символа'
-            }
+              message: 'Логин должен содержать минимум 2 символа',
+            },
           })}
           error={!!errors.name}
           helperText={errors.name?.message}
@@ -71,8 +83,8 @@ function RegisterForm({ onSwitchToLogin }) {
             required: 'Email обязателен',
             pattern: {
               value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: 'Неверный формат email'
-            }
+              message: 'Неверный формат email',
+            },
           })}
           error={!!errors.email}
           helperText={errors.email?.message}
@@ -88,8 +100,8 @@ function RegisterForm({ onSwitchToLogin }) {
             required: 'Пароль обязателен',
             minLength: {
               value: 5,
-              message: 'Минимальная длина пароля 5 символов'
-            }
+              message: 'Минимальная длина пароля 5 символов',
+            },
           })}
           error={!!errors.password}
           helperText={errors.password?.message}
@@ -103,7 +115,7 @@ function RegisterForm({ onSwitchToLogin }) {
           variant="outlined"
           {...register('confirmPassword', {
             required: 'Подтвердите пароль',
-            validate: value => value === password || 'Пароли не совпадают'
+            validate: (value) => value === password || 'Пароли не совпадают',
           })}
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword?.message}
@@ -114,6 +126,7 @@ function RegisterForm({ onSwitchToLogin }) {
           fullWidth
           variant="contained"
           sx={{ mt: 2, backgroundColor: '#646cff' }}
+          disabled={isLoading}
         >
           Зарегистрироваться
         </Button>
@@ -134,9 +147,15 @@ function RegisterForm({ onSwitchToLogin }) {
         </Typography>
       </Box>
 
-      {user?.success && (
+      {submitted && isSuccess && data?.message && (
         <Typography variant="body2" color="success.main" sx={{ mt: 2 }}>
-          {user.message}
+          {data.message}
+        </Typography>
+      )}
+
+      {error && (
+        <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+          Ошибка регистрации. Попробуйте снова.
         </Typography>
       )}
     </Paper>

@@ -6,7 +6,7 @@ import Content from './components/Content';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import { useDispatch, useSelector } from 'react-redux';
-import { checkSessionAsync, fetchProfile } from './actions/Requests';
+import { checkSessionAsync} from './actions/Requests';
 import {
   Box,
   Container,
@@ -16,13 +16,11 @@ import {
 import DrawerMenu from './components/DrawerMenu';
 import { useTheme } from './context/ThemeContext';
 
-
-
 function App() {
   const [showLogin, setShowLogin] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state) => state.feedback);
+  const {isAuthenticated } = useSelector((state) => state.requests);
   const drawerWidth = 240;
 
   const { isDarkMode } = useTheme();
@@ -33,7 +31,6 @@ function App() {
 
   useEffect(() => {
     dispatch(checkSessionAsync());
-    dispatch(fetchProfile());
   }, [dispatch]);
 
   if (!isAuthenticated) {

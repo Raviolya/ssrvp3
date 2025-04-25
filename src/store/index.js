@@ -1,15 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit';
-import feedbackReducer from '../actions/Requests';
+import { feedbackApi, userApi } from '../actions/Requests'; 
+import requsetsReducer from '../actions/Requests';
 import counterReducer from './counterSlice';
 
 const store = configureStore({
   reducer: {
-    feedback: feedbackReducer,
+    [userApi.reducerPath]: userApi.reducer,
+    [feedbackApi.reducerPath]: feedbackApi.reducer,
+    requests: requsetsReducer,
     counter: counterReducer,
   },
   
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware(), 
-  devTools: process.env.NODE_ENV !== 'production',
+  middleware: (getDefaultMiddleware) => 
+    getDefaultMiddleware()
+    .concat(feedbackApi.middleware)
+    .concat(userApi.middleware),
 });
 
 export default store;

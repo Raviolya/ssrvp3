@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -10,27 +10,33 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '../../context/ThemeContext';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchFeedback, deleteFeedbackAsync, fetchProfile } from '../../actions/Requests';
+import {
+  useFetchFeedbackQuery,
+  useDeleteFeedbackMutation,
+  useFetchProfileQuery
+} from '../../actions/Requests';
+import { useEffect } from 'react';
 
-function FeedbackList() {
+function FeedbackList({onRefetch}) {
   const { isDarkMode } = useTheme();
-  const { feedbacks, profile } = useSelector((state) => state.feedback);
-  const dispatch = useDispatch();
   const isMobile = useMediaQuery('(max-width:600px)');
 
-  useEffect(() => {
-    dispatch(fetchFeedback());
-    dispatch(fetchProfile());
-  }, [dispatch]);
+  const { data: feedbacks = [], isLoading, refetch: refetchFeedbacks } = useFetchFeedbackQuery();
+  const { data: profile } = useFetchProfileQuery();
+  const [deleteFeedback] = useDeleteFeedbackMutation();
 
   const onDelete = async (id) => {
     try {
-      await dispatch(deleteFeedbackAsync(id)).unwrap();
+      await deleteFeedback(id).unwrap();
+      refetchFeedbacks();
     } catch (error) {
       console.error('Ошибка при удалении:', error);
     }
   };
+
+  useEffect(() => {
+    if (onRefetch) onRefetch(refetchFeedbacks);
+  }, [onRefetch, refetchFeedbacks]);
 
   return (
     <Box mt={4}>
@@ -42,7 +48,11 @@ function FeedbackList() {
         Отзывы
       </Typography>
 
-      {feedbacks.length === 0 ? (
+      {isLoading ? (
+        <Typography variant="body2" align="center">
+          Загрузка...
+        </Typography>
+      ) : feedbacks.length === 0 ? (
         <Typography variant="body2" align="center" color="textSecondary">
           Пока нет отзывов
         </Typography>

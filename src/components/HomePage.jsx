@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext'; 
 
 function HomePage() {
-  const { isDarkMode } = useTheme(); // Твоя собственная тема
+  const { isDarkMode } = useTheme(); 
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

@@ -1,8 +1,6 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { NavLink } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { Logout } from '../actions/Requests';
 import {
   Box,
   Button,
@@ -10,19 +8,26 @@ import {
   CircularProgress,
   Link as MuiLink
 } from '@mui/material';
-import {useMediaQuery} from '@mui/material';
+import { useMediaQuery } from '@mui/material';
+import {
+  useLogoutMutation,
+  useFetchProfileQuery
+} from '../actions/Requests';
+import { useNavigate } from 'react-router-dom';
 
 function UserProfile() {
   const { isDarkMode } = useTheme();
-  const dispatch = useDispatch();
-
   const isMobile = useMediaQuery('(max-width:700px)');
 
-  const { profile } = useSelector((state) => state.feedback);
+  const { data: profile, isLoading } = useFetchProfileQuery();
+  const [logout] = useLogoutMutation();
+
+  const navigate = useNavigate();
 
   const onLogout = async () => {
     try {
-      await dispatch(Logout()).unwrap();
+      await logout().unwrap();
+      navigate("/login");
     } catch (error) {
       console.error("Ошибка при выходе:", error);
     }
@@ -31,10 +36,10 @@ function UserProfile() {
   return (
     <Box
       sx={{
-        position: isMobile? 'realtive' : 'absolute',
+        position: isMobile ? 'relative' : 'absolute',
         right: '60px',
         display: 'flex',
-        mr: isMobile? 0 : 2,
+        mr: isMobile ? 0 : 2,
         flexDirection: isMobile ? 'column' : 'row',
         alignItems: isMobile ? 'flex-start' : 'center',
         gap: isMobile ? 1 : 2,
@@ -52,24 +57,26 @@ function UserProfile() {
           fontWeight: 500
         }}
       >
-        
-        {profile ? (
-          <Typography variant="body1">{profile.username}</Typography>
-        ) : (
+        {isLoading ? (
           <CircularProgress size={20} />
+        ) : (
+          <Typography variant="body1">{profile?.username}</Typography>
         )}
       </MuiLink>
-      {profile && profile.role == 'admin' &&
-      <MuiLink
-        component={NavLink}
-        to="/admin_panel"
-        underline="hover"
-        sx={{
-          color: isDarkMode ? '#fff' : '#213547',
-          fontWeight: 500
-        }}
-      >Панель администрирования</MuiLink>
-      }
+
+      {profile?.role === 'admin' && (
+        <MuiLink
+          component={NavLink}
+          to="/admin_panel"
+          underline="hover"
+          sx={{
+            color: isDarkMode ? '#fff' : '#213547',
+            fontWeight: 500
+          }}
+        >
+          Панель администрирования
+        </MuiLink>
+      )}
 
       <Button
         onClick={onLogout}

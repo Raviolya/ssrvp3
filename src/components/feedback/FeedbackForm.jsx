@@ -12,26 +12,31 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
-import { createFeedbackAsync } from '../../actions/Requests';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  useCreateFeedbackMutation,
+  useFetchProfileQuery
+} from '../../actions/Requests';
 
-function FeedbackForm() {
+function FeedbackForm({ onFeedbackSent }) {
   const { isDarkMode } = useTheme();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
-  const dispatch = useDispatch();
 
-  const { profile } = useSelector((state) => state.feedback);
+  const [createFeedback] = useCreateFeedbackMutation();
+  const { data: profile } = useFetchProfileQuery();
 
   const onSubmit = async (data) => {
+    if (!profile) return;
+
     try {
-      await dispatch(createFeedbackAsync({
+      await createFeedback({
         email: data.email,
         message: data.message,
         rating: data.rating,
         date: new Date().toLocaleString(),
         user_id: profile.id,
-      })).unwrap();
+      }).unwrap();
       reset();
+      if (onFeedbackSent) onFeedbackSent();
     } catch (error) {
       console.error("Ошибка при отправке:", error);
     }

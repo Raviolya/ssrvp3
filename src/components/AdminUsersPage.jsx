@@ -1,140 +1,117 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import AdminUsersTable from './AdminPanel';
 import Snackbar from '@mui/material/Snackbar';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchProfile,
-  fetchFeedback,
-  blockFeedbackAsync,
-  unblockFeedbackAsync,
-  deleteFeedbackAsync
-} from '../actions/Requests';
 import AdminFeedbackTable from './AdminFeedback';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import {
+  useFetchProfileQuery,
+  useFetchFeedbackQuery,
+  useDeleteFeedbackMutation,
+  useBlockFeedbackMutation,
+  useUnblockFeedbackMutation,
+  useFetchUsersQuery,
+  useDeleteUserMutation,
+  useBlockUserMutation,
+  useUnblockUserMutation
+} from '../actions/Requests';
 
 export default function AdminUsersPage() {
+  const { data: profile, isLoading: profileLoading } = useFetchProfileQuery();
+  const { data: feedbacks = [], refetch: refetchFeedbacks } = useFetchFeedbackQuery();
+  const { data: usersData = [], refetch: refetchUsers } = useFetchUsersQuery();
+
+  const [deleteFeedback] = useDeleteFeedbackMutation();
+  const [blockFeedback] = useBlockFeedbackMutation();
+  const [unblockFeedback] = useUnblockFeedbackMutation();
+
+  const [deleteUser] = useDeleteUserMutation();
+  const [blockUser] = useBlockUserMutation();
+  const [unblockUser] = useUnblockUserMutation();
+
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
-  const [users, setUsers] = useState([]);
-
-  const { feedbacks } = useSelector((state) => state.feedback);
-  const { profile } = useSelector((state) => state.feedback);
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchProfile());
-    dispatch(fetchFeedback());
-    fetchUsers();
-  }, [dispatch]);
 
   const showMessage = (msg) => setSnackbar({ open: true, message: msg });
 
-  const handleDelete = (id) => {
-    return fetch(`/api/admin/delete/${id}`, { method: 'DELETE' })
-      .then(() => {
-        showMessage('Пользователь удалён');
-        fetchUsers();
-      })
-      .catch(() => {
-        showMessage('Не удалось обновить статус');
-        throw new Error();
-      });
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch('/api/admin/users');
-      if (!res.ok) throw new Error('Ошибка при загрузке пользователей');
-
-      const data = await res.json();
-
-      if (!Array.isArray(data.users)) {
-        throw new Error('Ожидался массив пользователей');
-      }
-
-      setUsers(data.users);
-    } catch (error) {
-      console.error('Ошибка при получении пользователей:', error);
-    }
-  };
-
-  const handleBlock = (id) => {
-    return fetch(`/api/admin/users/${id}/block`, { method: 'PUT' })
-      .then(() => {
-        showMessage('Пользователь заблокирован');
-        fetchUsers();
-      })
-      .catch(() => {
-        showMessage('Не удалось обновить статус');
-        throw new Error();
-      });
-  };
-
-  const handleUnblock = (id) => {
-    return fetch(`/api/admin/users/${id}/unblock`, { method: 'PUT' })
-      .then(() => {
-        showMessage('Пользователь разблокирован');
-        fetchUsers();
-      })
-      .catch(() => {
-        showMessage('Не удалось обновить статус');
-        throw new Error();
-      });
-  };
-
   const handleFeedDelete = async (id) => {
     try {
-      await dispatch(deleteFeedbackAsync(id)).unwrap();
-      dispatch(fetchFeedback());
+      await deleteFeedback(id).unwrap();
+      refetchFeedbacks();
     } catch (e) {
-      console.error('Ошибка при удалении:', e);
+      console.error('Ошибка при удалении отзыва:', e);
     }
   };
 
   const handleFeedToggleBlock = async (id) => {
     try {
-      await dispatch(blockFeedbackAsync(id)).unwrap();
-      dispatch(fetchFeedback());
+      await blockFeedback(id).unwrap();
+      refetchFeedbacks();
     } catch (e) {
-      console.error('Ошибка при изменении статуса:', e);
+      console.error('Ошибка при блокировке отзыва:', e);
     }
   };
 
   const handleFeedToggleUnblock = async (id) => {
     try {
-      await dispatch(unblockFeedbackAsync(id)).unwrap();
-      dispatch(fetchFeedback());
+      await unblockFeedback(id).unwrap();
+      refetchFeedbacks();
     } catch (e) {
-      console.error('Ошибка при изменении статуса:', e);
+      console.error('Ошибка при разблокировке отзыва:', e);
     }
   };
 
-  if (!profile) {
-    return <div>Загрузка профиля...</div>;
-  }
+  const handleDelete = async (id) => {
+    try {
+      await deleteUser(id).unwrap();
+      showMessage('Пользователь удалён');
+      refetchUsers();
+    } catch {
+      showMessage('Не удалось удалить пользователя');
+    }
+  };
+
+  const handleBlock = async (id) => {
+    try {
+      await blockUser(id).unwrap();
+      showMessage('Пользователь заблокирован');
+      refetchUsers();
+    } catch {
+      showMessage('Не удалось заблокировать пользователя');
+    }
+  };
+
+  const handleUnblock = async (id) => {
+    try {
+      await unblockUser(id).unwrap();
+      showMessage('Пользователь разблокирован');
+      refetchUsers();
+    } catch {
+      showMessage('Не удалось разблокировать пользователя');
+    }
+  };
+
+  if (profileLoading || !profile) return <div>Загрузка профиля...</div>;
 
   return (
     <>
-    <DndProvider backend={HTML5Backend}>
-      {profile && profile.role === 'admin' && (
-        
+      <DndProvider backend={HTML5Backend}>
+        {profile.role === 'admin' && (
           <AdminUsersTable
-            data={users}
+            data={usersData.users || []}
             onDelete={handleDelete}
             onBlock={handleBlock}
             onUnblock={handleUnblock}
             currentUserId={profile.id}
           />
-        
-      )}
-      <AdminFeedbackTable
-        data={feedbacks}
-        onDelete={handleFeedDelete}
-        onToggleBlock={handleFeedToggleBlock}
-        onToggleUnblock={handleFeedToggleUnblock}
-      />
-    </DndProvider>
+        )}
+        <AdminFeedbackTable
+          data={feedbacks}
+          onDelete={handleFeedDelete}
+          onToggleBlock={handleFeedToggleBlock}
+          onToggleUnblock={handleFeedToggleUnblock}
+        />
+      </DndProvider>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

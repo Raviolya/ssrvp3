@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import FeedbackForm from './FeedbackForm';
 import FeedbackList from './FeedbackList';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,30 +8,19 @@ import {
   Paper,
   Box
 } from '@mui/material';
+import { useRef } from 'react';
 
 function FeedbackPage() {
   const { isDarkMode } = useTheme();
-
-  const [feedbacks, setFeedbacks] = useState(() => {
-    const savedFeedbacks = localStorage.getItem('feedbacks');
-    return savedFeedbacks ? JSON.parse(savedFeedbacks) : [];
-  });
-
-  const handleSubmitFeedback = useCallback((newFeedback) => {
-    setFeedbacks(prevFeedbacks => {
-      const updatedFeedbacks = [newFeedback, ...prevFeedbacks];
-      localStorage.setItem('feedbacks', JSON.stringify(updatedFeedbacks));
-      return updatedFeedbacks;
-    });
-  }, []);
+  const refetchFeedbacksRef = useRef(null);
 
   return (
     <Container
       maxWidth="md"
       disableGutters
       sx={{
-        py: { xs: 0, sm: 4 }, // без вертикальных отступов на xs
-        px: { xs: 0, sm: 2 }, // горизонтальные отступы если нужно
+        py: { xs: 0, sm: 4 },
+        px: { xs: 0, sm: 2 },
       }}
     >
       <Paper
@@ -54,8 +43,8 @@ function FeedbackPage() {
           </Typography>
         </Box>
 
-        <FeedbackForm onSubmit={handleSubmitFeedback} />
-        <FeedbackList feedbacks={feedbacks} />
+        <FeedbackForm onFeedbackSent={() => refetchFeedbacksRef.current?.()} />
+        <FeedbackList onRefetch={(refetch) => { refetchFeedbacksRef.current = refetch }} />
       </Paper>
     </Container>
   );

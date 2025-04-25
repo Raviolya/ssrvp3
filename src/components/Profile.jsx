@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProfile, updateProfileAsync } from '../actions/Requests';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -10,39 +8,38 @@ import {
   Typography,
   CircularProgress
 } from '@mui/material';
+import { useFetchProfileQuery, useUpdateProfileMutation } from '../actions/Requests';
 
 const Profile = () => {
-  const dispatch = useDispatch();
-  const { profile, loading } = useSelector((state) => state.feedback);
-
-  const { isDarkMode} = useTheme();
+  const { isDarkMode } = useTheme();
 
   const {
     register,
     handleSubmit,
+    reset,
     setValue,
     formState: { errors }
   } = useForm();
-  
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  
-  useEffect(() => {
-    dispatch(fetchProfile());
-  }, [dispatch]);
-  
+
+  const { data: profile, isLoading, refetch: refetchProfile } = useFetchProfileQuery();
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+
   useEffect(() => {
     if (profile) {
-      setUsername(profile.username || '');
-      setEmail(profile.email || '');
-  
-      setValue('username', profile.username || '');
-      setValue('email', profile.email || '');
+      reset({
+        username: profile.username || '',
+        email: profile.email || '',
+      });
     }
-  }, [profile, setValue]);
-  
-  const onSubmit = () => {
-    dispatch(updateProfileAsync({ id: profile.id, profileData: { username, email } }));
+  }, [profile, reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      await updateProfile({ id: profile.id, profileData: data }).unwrap();
+      refetchProfile();
+    } catch (error) {
+      console.error('Ошибка при обновлении профиля:', error);
+    }
   };
 
   return (
@@ -66,28 +63,9 @@ const Profile = () => {
             value: 5,
             message: 'Логин должен содержать минимум 5 символов',
           },
-          onChange: (e) => setUsername(e.target.value),
         })}
         fullWidth
-        sx={{
-          '& .MuiInputBase-input': {
-            color: isDarkMode ? '#fff' : '#000',
-          },
-          '& .MuiInputLabel-root': {
-            color: isDarkMode ? '#aaa' : '#555',
-          },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: isDarkMode ? '#666' : '#ccc',
-            },
-            '&:hover fieldset': {
-              borderColor: isDarkMode ? '#888' : '#888',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: isDarkMode ? '#fff' : '#1976d2',
-            },
-          },
-        }}
+        sx={inputStyle(isDarkMode)}
       />
 
       <TextField
@@ -96,47 +74,48 @@ const Profile = () => {
         variant="outlined"
         error={!!errors.email}
         helperText={errors.email?.message}
-        
         {...register('email', {
           required: 'Введите email',
           pattern: {
             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
             message: 'Неверный формат email',
           },
-          onChange: (e) => setEmail(e.target.value),
         })}
         fullWidth
-        sx={{
-          '& .MuiInputBase-input': {
-            color: isDarkMode ? '#fff' : '#000',
-          },
-          '& .MuiInputLabel-root': {
-            color: isDarkMode ? '#aaa' : '#555',
-          },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: isDarkMode ? '#666' : '#ccc',
-            },
-            '&:hover fieldset': {
-              borderColor: isDarkMode ? '#888' : '#888',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: isDarkMode ? '#fff' : '#1976d2',
-            },
-          },
-        }}
+        sx={inputStyle(isDarkMode)}
       />
+
       <Button
         type="submit"
         variant="contained"
         color="primary"
         sx={{ textTransform: 'none', height: 45 }}
-        disabled={loading}
+        disabled={isUpdating}
       >
-        {loading ? <CircularProgress size={24} color="inherit" /> : 'Обновить профиль'}
+        {isUpdating ? <CircularProgress size={24} color="inherit" /> : 'Обновить профиль'}
       </Button>
     </Box>
   );
 };
+
+const inputStyle = (isDark) => ({
+  '& .MuiInputBase-input': {
+    color: isDark ? '#fff' : '#000',
+  },
+  '& .MuiInputLabel-root': {
+    color: isDark ? '#aaa' : '#555',
+  },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: isDark ? '#666' : '#ccc',
+    },
+    '&:hover fieldset': {
+      borderColor: isDark ? '#888' : '#888',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: isDark ? '#fff' : '#1976d2',
+    },
+  },
+});
 
 export default Profile;

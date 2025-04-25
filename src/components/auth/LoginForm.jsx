@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from '../../context/ThemeContext';
-import { signinAccountAsync } from '../../actions/Requests';
-import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../assets/svg/loadingCircle.svg';
 import {
@@ -13,6 +11,8 @@ import {
   Box,
   Link,
 } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { useSigninAccountMutation, checkSessionAsync } from '../../actions/Requests';
 
 function LoginForm({ onSwitchToRegister }) {
   const { isDarkMode } = useTheme();
@@ -22,23 +22,23 @@ function LoginForm({ onSwitchToRegister }) {
     formState: { errors },
   } = useForm();
 
-  const { loading, error, isAuthenticated } = useSelector((state) => state.feedback);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [signinAccount, { isLoading: isSigninLoading, error: signinError }] = useSigninAccountMutation();
+
+  const dispatch = useDispatch();
+  
   const onSubmit = async (data) => {
     try {
-      await dispatch(signinAccountAsync({ email: data.email, password: data.password })).unwrap();
-    } catch (error) {
-      console.error('Ошибка при входе:', error);
+      await signinAccount({ email: data.email, password: data.password }).unwrap();
+      const result = await dispatch(checkSessionAsync()).unwrap();
+      if (result?.authenticated) {
+        navigate('/');
+      }
+    } catch (err) {
+      console.error("Ошибка при входе:", err);
     }
   };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
 
   return (
     <Paper
@@ -98,16 +98,16 @@ function LoginForm({ onSwitchToRegister }) {
           variant="contained"
           sx={{ mt: 2, backgroundColor: '#646cff' }}
         >
-          {loading ? (
+          {isSigninLoading? (
             <img src={Loader} alt="Загрузка..." style={{ height: 24 }} />
           ) : (
             'Войти'
           )}
         </Button>
 
-        {error && (
+        {signinError && (
           <Typography color="error" align="center" sx={{ mt: 1 }}>
-            {error}
+            {signinError.data?.message || 'Неверный email или пароль'}
           </Typography>
         )}
       </form>

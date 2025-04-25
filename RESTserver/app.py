@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_cors import CORS
 from functools import wraps
 from flask import abort
 

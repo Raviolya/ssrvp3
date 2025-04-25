@@ -1,65 +1,93 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 
-export const fetchFeedback = createAsyncThunk(
-  'feedback/fetchFeedback',
-  async () => {
-    const response = await axios.get(`/api/feedback`);
-    return response.data;
-  }
-);
+export const userApi = createApi({
+  reducerPath: 'userApi',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }), 
+  endpoints: (builder) => ({
 
-export const deleteFeedbackAsync = createAsyncThunk(
-    'feedback/deleteFeedback',
-    async (id) => {
-      await axios.delete(`/api/feedback/${id}`);
-      console.log(id);
-      return id;
-    }
-  );
+    fetchUsers: builder.query({
+      query: () => '/admin/users',
+    }),
 
-export const createFeedbackAsync = createAsyncThunk(
-    'feedback/createFeedback',
-    async (feedback) => {
-      const response = await axios.post(`/api/feedback`, feedback);
-      return response.data;
-    }
-  );
+    deleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/delete/${userId}`,
+        method: 'DELETE',
+      }),
+    }),
 
-export const fetchProfile = createAsyncThunk(
-  'profile/fetchProfile',
-  async () => {
-      const response = await axios.get(`/api/profile`);
-      console.log(response.data);
-      return response.data;
-  }
-);
+    blockUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/users/${userId}/block`,
+        method: 'PUT',
+      }),
+    }),
 
-export const updateProfileAsync = createAsyncThunk(
-    'profile/updateProfile',
-    async ({ id, profileData }) => {
-        const response = await axios.put(`/api/profile/${id}`, profileData);
-        return response.data;
-    }
-);
+    unblockUser: builder.mutation({
+      query: (userId) => ({
+        url: `/admin/users/${userId}/unblock`,
+        method: 'PUT',
+      }),
+    }),
 
-export const createAccountAsync = createAsyncThunk(
-    'signup/createAccount',
-    async (account) => {
-      const response = await axios.post(`/api/signup`, account);
-      return response.data;
-    }
-);
+    fetchProfile: builder.query({
+      query: () => '/profile', 
+    }),
 
-export const signinAccountAsync = createAsyncThunk(
-  'signin/signinAccount',
-  async (account, {dispatch}) => {
-    const response = await axios.post(`/api/signin`, account);
-    dispatch(checkSessionAsync());
-    return response.data;
-  }
-);
+    updateProfile: builder.mutation({
+      query: ({ id, profileData }) => ({
+        url: `/profile/${id}`,
+        method: 'PUT',
+        body: profileData,
+      }),
+    }),
+
+    createAccount: builder.mutation({
+      query: (account) => ({
+        url: '/signup',
+        method: 'POST',
+        body: account,
+      }),
+    }),
+
+    signinAccount: builder.mutation({
+      query: (account) => ({
+        url: '/signin',
+        method: 'POST',
+        body: account,
+      }),
+    }),
+
+    checkSession: builder.query({
+      query: () => '/session',
+    }),
+
+    logout: builder.mutation({
+      query: () => ({
+        url: '/logout',
+        method: 'POST',
+      }),
+    }),
+  }),
+});
+
+export const {
+  useFetchProfileQuery,
+  useUpdateProfileMutation,
+  useCreateAccountMutation,
+  useSigninAccountMutation,
+  useCheckSessionQuery,
+  useBlockUserMutation,
+  useUnblockUserMutation,
+  useDeleteUserMutation,
+  useLogoutMutation,
+  useFetchUsersQuery,
+} = userApi;
+
 
 export const checkSessionAsync = createAsyncThunk(
   'auth/checkSession',
@@ -69,142 +97,94 @@ export const checkSessionAsync = createAsyncThunk(
   }
 );
 
-export const Logout = createAsyncThunk(
-  'session/Logout',
-  async () => {
-      const response = await axios.post(`/api/logout`, {withCredentials: true});
-      return response.data;
-  }
-);
 
-export const blockFeedbackAsync = createAsyncThunk(
-  'feedback/block',
-  async (id) => {
-    await axios.put(`/api/feedback/block/${id}`);
-    return id;
-  }
-);
+export const feedbackApi = createApi({
+  reducerPath: 'feedbackApi',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api/' }),
+  endpoints: (builder) => ({
+    fetchFeedback: builder.query({
+      query: () => 'feedback',
+    }),
+    deleteFeedback: builder.mutation({
+      query: (id) => ({
+        url: `feedback/${id}`,
+        method: 'DELETE',
+      }),
+    }),
+    createFeedback: builder.mutation({
+      query: (feedback) => ({
+        url: 'feedback',
+        method: 'POST',
+        body: feedback,
+      }),
+    }),
+    blockFeedback: builder.mutation({
+      query: (id) => ({
+        url: `feedback/block/${id}`,
+        method: 'PUT',
+      }),
+    }),
+    unblockFeedback: builder.mutation({
+      query: (id) => ({
+        url: `feedback/unblock/${id}`,
+        method: 'PUT',
+      }),
+    }),
+  }),
+});
 
-export const unblockFeedbackAsync = createAsyncThunk(
-  'feedback/unblock',
-  async (id) => {
-    await axios.put(`/api/feedback/unblock/${id}`);
-    return id;
-  }
-);
+export const {
+  useFetchFeedbackQuery,
+  useDeleteFeedbackMutation,
+  useCreateFeedbackMutation,
+  useBlockFeedbackMutation,
+  useUnblockFeedbackMutation,
+} = feedbackApi;
 
-const feedbackSlice = createSlice({
-  name: 'feedback',
+const requestSlice = createSlice({
+  name: 'requests',
   initialState: {
     isAuthenticated: null,
-    username: null,
-    user: null,
+    loading: false,
+    error: null,
     feedbacks: [],
-    profile: null,
     loading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFeedback.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchFeedback.fulfilled, (state, action) => {
-        state.loading = false;
-        state.feedbacks = action.payload;
-      })
-      .addCase(fetchFeedback.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      .addCase(deleteFeedbackAsync.pending, (state) => {
-          state.loading = true;
-      })
-      .addCase(deleteFeedbackAsync.fulfilled, (state, action) => {
-          state.loading = false;
-          state.feedbacks = state.feedbacks.filter(f => f.id !== action.payload);
-      })
-      .addCase(deleteFeedbackAsync.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-      })
-      .addCase(createFeedbackAsync.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(createFeedbackAsync.fulfilled, (state, action) => {
-          state.loading = false;
-          state.feedbacks = [...state.feedbacks, action.payload];
-      })
-      .addCase(createFeedbackAsync.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-      })
-      .addCase(fetchProfile.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchProfile.fulfilled, (state, action) => {
-          state.loading = false;
-          state.profile = action.payload;
-      })
-      .addCase(fetchProfile.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-      })
-      .addCase(updateProfileAsync.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(updateProfileAsync.fulfilled, (state, action) => {
-          state.loading = false;
-          state.profile = action.payload;
-      })
-      .addCase(updateProfileAsync.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.error.message;
-      })
-      .addCase(createAccountAsync.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(createAccountAsync.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(createAccountAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      .addCase(signinAccountAsync.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(signinAccountAsync.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(signinAccountAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-        localStorage.removeItem('token');
-      })
       .addCase(checkSessionAsync.pending, (state) => {
         state.loading = true;
       })
       .addCase(checkSessionAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = action.payload.authenticated;
-        state.username = action.payload.username || null;
-        state.profile = action.payload.profile || null;
       })
       .addCase(checkSessionAsync.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
-        state.username = null;
-        state.profile = null;
         state.error = 'Ошибка входа';
       })
-      .addCase(Logout.fulfilled, (state) => {
-        state.isAuthenticated = false;
-      });
+      .addMatcher(
+        feedbackApi.endpoints.fetchFeedback.matchFulfilled,
+        (state, action) => {
+          state.feedbacks = action.payload;
+        }
+      )
+      .addMatcher(
+        feedbackApi.endpoints.deleteFeedback.matchFulfilled,
+        (state, action) => {
+          state.feedbacks = state.feedbacks.filter(f => f.id !== action.payload);
+        }
+      )
+      .addMatcher(
+        feedbackApi.endpoints.createFeedback.matchFulfilled,
+        (state, action) => {
+          state.feedbacks.push(action.payload);
+        }
+      );
   },
 });
 
-export default feedbackSlice.reducer;
+export default requestSlice.reducer;
